@@ -11,3 +11,8 @@ steps:
   displayName: 'Install SDK 2.1.300'
   inputs:
     version: 2.1.300
+- task: PowerShell@2
+  inputs:
+    targetType: 'filePath'
+    filePath: .\build.ps1
+    arguments: -PullRequestNumber "$env:APPVEYOR_PULL_REQUEST_NUMBER" -CreatePackages $true
