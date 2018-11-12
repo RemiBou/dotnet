@@ -5,3 +5,9 @@
 
 pool:
   vmImage: 'VS2017-Win2016'
+
+steps:
+- task: DotNetCoreInstaller@0
+  displayName: 'Install SDK 2.1.300'
+  inputs:
+    version: 2.1.300
