@@ -11,7 +11,7 @@ steps:
   displayName: 'Clean NAT'
   inputs:
     targetType: inline
-    script: Get-NetNat | Remove-NetNat
+    script: Get-NetNat | Remove-NetNat -Confirm
     
 - task: DockerCompose@0
   inputs:
