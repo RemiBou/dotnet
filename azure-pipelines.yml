@@ -7,6 +7,11 @@ pool:
   vmImage: 'VS2017-Win2016'
 
 steps:
+- task: PowerShell@2
+  displayName: 'Clean NAT'
+  inputs:
+    script: Get-NetNat | Remove-NetNat
+    
 - task: DockerCompose@0
   inputs:
     dockerComposeCommand: up
