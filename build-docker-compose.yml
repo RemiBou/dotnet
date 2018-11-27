@@ -1,6 +1,14 @@
 version: '3'
 services:
-  sql-server:
-    image: microsoft/mssql-server-windows-developer
+  #sql-server:
+  #  image: microsoft/mssql-server-windows-developer
+  #  ports:
+  #    - "1433:1433"
+  postgres:
+    image: postgres
     ports:
-      - "1433:1433"
+      - "5432:5432"
+    args:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Password12!
+      POSTGRES_DB: test
