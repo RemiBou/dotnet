@@ -11,7 +11,7 @@ steps:
   displayName: 'Clean NAT'
   inputs:
     targetType: filePath
-    script: 'windows-network-conainer-cleanup.ps1'
+    filePath: 'windows-network-conainer-cleanup.ps1'
     arguments: '-Cleanup -ForceDeleteAllSwitches'    
 - task: DockerCompose@0
   inputs:
