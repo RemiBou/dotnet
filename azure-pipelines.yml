@@ -16,7 +16,7 @@ steps:
 - task: DockerCompose@0
   inputs:
     dockerComposeCommand: up
-    dockerComposeFile: '.\build-docker-compose.yml'
+    dockerComposeFile: 'build-docker-compose.yml'
 - task: DotNetCoreInstaller@0
   displayName: 'Install SDK 2.1.300'
   inputs:
