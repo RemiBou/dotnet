@@ -13,7 +13,7 @@ steps:
     version: 2.1.300
 - task: DockerCompose@0
   inputs:
-    action: run Services
+    dockerComposeCommand: up
     dockerComposeFile: build-docker-compose.yml 
 
 - task: PowerShell@2
