@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'win1803'
 
 steps:
 - task: PowerShell@2
@@ -16,7 +16,7 @@ steps:
 - task: DockerCompose@0
   inputs:
     dockerComposeCommand: up
-    dockerComposeFile: 'build-docker-compose.yml'
+    dockerComposeFile: '.\build-docker-compose.yml'
 - task: DotNetCoreInstaller@0
   displayName: 'Install SDK 2.1.300'
   inputs:
