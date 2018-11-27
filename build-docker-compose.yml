@@ -1,4 +1,6 @@
 version: '3'
 services:
-  sql:
+  sql-server:
     image: microsoft/mssql-server-windows-developer
+    ports:
+      - "1433:1433"
