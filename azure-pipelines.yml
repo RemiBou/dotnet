@@ -11,12 +11,12 @@ steps:
   displayName: 'Clean NAT'
   inputs:
     targetType: filePath
-    script: windows-network-conainer-cleanup.ps1
+    script: 'windows-network-conainer-cleanup.ps1'
     arguments: '-Cleanup -ForceDeleteAllSwitches'    
 - task: DockerCompose@0
   inputs:
     dockerComposeCommand: up
-    dockerComposeFile: .\build-docker-compose.yml 
+    dockerComposeFile: '.\build-docker-compose.yml'
 - task: DotNetCoreInstaller@0
   displayName: 'Install SDK 2.1.300'
   inputs:
