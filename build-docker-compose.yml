@@ -5,8 +5,7 @@ services:
   #  ports:
   #    - "1433:1433"
   postgres:
-    image: postgres
-    platform: linux
+    image: stellirin/postgres-windows
     ports:
       - "5432:5432"
     environment:
