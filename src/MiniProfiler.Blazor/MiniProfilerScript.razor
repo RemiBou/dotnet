@@ -21,6 +21,7 @@
         if(!firstRender){
             return;
         }
+        
         var miniProf = MiniProfiler.DefaultOptions.StartProfiler();
         using(miniProf.Step("load css"))
         {
@@ -31,9 +32,13 @@
                 await jsRuntime.InvokeVoidAsync("eval", js);
             }
         }
+       
         await miniProf.StopAsync();
-        Console.WriteLine(miniProf.ToJson());
-        await miniProfilerJsInterop.RenderProfiler(miniProf);
+        MemoryStream ms = new MemoryStream();
+        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(MiniProfiler));
+        serializer.WriteObject(ms, miniProf);
+        Console.WriteLine(Encoding.UTF8.GetString(ms.ToArray()));
+        //await miniProfilerJsInterop.RenderProfiler(miniProf.Clone());
     }
 
 }
