@@ -302,7 +302,6 @@ namespace StackExchange.Profiling {
                         if (mp.options.startHidden) {
                             mp.container.hide();
                         }
-                        console.log('line 305', mp);
                         // if any data came in before the view popped up, render now
                         if (mp.savedJson) {
                             for (const saved of mp.savedJson) {
@@ -639,6 +638,7 @@ namespace StackExchange.Profiling {
 
         private renderProfiler = (json: IProfiler) => {
             const p = this.processJson(json);
+            console.log(json);
             const mp = this;
             const encode = this.htmlEscape;
             const duration = (milliseconds: number | undefined, decimalPlaces?: number) => {
