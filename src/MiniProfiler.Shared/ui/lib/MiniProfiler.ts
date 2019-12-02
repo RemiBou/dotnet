@@ -264,7 +264,7 @@ namespace StackExchange.Profiling {
             const data = script.data();
 
             if (!script.length) {
-                 return;
+                return;
             }
 
             this.options = {
@@ -302,7 +302,7 @@ namespace StackExchange.Profiling {
                         if (mp.options.startHidden) {
                             mp.container.hide();
                         }
-
+                        console.log('line 305', mp);
                         // if any data came in before the view popped up, render now
                         if (mp.savedJson) {
                             for (const saved of mp.savedJson) {
@@ -353,6 +353,7 @@ namespace StackExchange.Profiling {
                     }
                 }
             };
+
 
             $(mp.installAjaxHandlers);
             $(deferInit);
@@ -417,7 +418,7 @@ namespace StackExchange.Profiling {
 
                 const isoDate = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/;
                 const parseDates = (key: string, value: any) =>
-                          key === 'Started' && typeof value === 'string' && isoDate.exec(value) ? new Date(value) : value;
+                    key === 'Started' && typeof value === 'string' && isoDate.exec(value) ? new Date(value) : value;
 
                 mp.fetchStatus[id] = 'Starting fetch';
                 this.jq.ajax({
@@ -480,9 +481,9 @@ namespace StackExchange.Profiling {
                     for (const customType of Object.keys(timing.CustomTimings)) {
                         const customTimings = timing.CustomTimings[customType];
                         const customStat = {
-                                  Duration: 0,
-                                  Count: 0,
-                              };
+                            Duration: 0,
+                            Count: 0,
+                        };
                         const duplicates: { [id: string]: boolean } = {};
                         for (const customTiming of customTimings) {
                             // Add to the overall list for the queries view
@@ -905,13 +906,13 @@ namespace StackExchange.Profiling {
             const $ = this.jq;
             // Common handlers
             $(document)
-                .on('click', '.mp-toggle-trivial', function(e) {
+                .on('click', '.mp-toggle-trivial', function (e) {
                     e.preventDefault();
                     $(this).closest('.mp-result').toggleClass('show-trivial');
-                }).on('click', '.mp-toggle-columns', function(e) {
+                }).on('click', '.mp-toggle-columns', function (e) {
                     e.preventDefault();
                     $(this).closest('.mp-result').toggleClass('show-columns');
-                }).on('click', '.mp-toggle-trivial-gaps', function(e) {
+                }).on('click', '.mp-toggle-trivial-gaps', function (e) {
                     e.preventDefault();
                     $(this).closest('.mp-queries').toggleClass('show-trivial');
                 });
@@ -919,12 +920,12 @@ namespace StackExchange.Profiling {
             // Full vs. Corner handlers
             if (mode === RenderMode.Full) {
                 // since queries are already shown, just highlight and scroll when clicking a '1 sql' link
-                $(document).on('click', '.mp-popup .mp-queries-show', function() {
+                $(document).on('click', '.mp-popup .mp-queries-show', function () {
                     mp.scrollToQuery($(this), $('.mp-queries'), $(document));
                 });
             } else {
                 $(document)
-                    .on('click', '.mp-button', function(e) {
+                    .on('click', '.mp-button', function (e) {
                         const button = $(this);
                         const popup = button.siblings('.mp-popup');
                         const wasActive = button.parent().hasClass('active');
@@ -945,7 +946,7 @@ namespace StackExchange.Profiling {
                                 popup.css({ 'top': 0, 'max-height': 'calc(100vh - ' + (button.offset().top - $(window).scrollTop() + 25) + 'px)' });
                             }
                         }
-                    }).on('click', '.mp-queries-show', function(e) {
+                    }).on('click', '.mp-queries-show', function (e) {
                         // opaque background
                         const overlay = $('<div class="mp-overlay"><div class="mp-overlay-bg"/></div>').appendTo('body');
                         const queries = $(this).closest('.mp-result').find('.mp-queries').clone().appendTo(overlay).show();
@@ -984,12 +985,12 @@ namespace StackExchange.Profiling {
                 $('.mp-controls .mp-min-max').click(() => container.toggleClass('mp-min'));
 
                 container.hover(
-                    function() {
+                    function () {
                         if ($(this).hasClass('mp-min')) {
                             $(this).find('.mp-min-max').show();
                         }
                     },
-                    function() {
+                    function () {
                         if ($(this).hasClass('mp-min')) {
                             $(this).find('.mp-min-max').hide();
                         }

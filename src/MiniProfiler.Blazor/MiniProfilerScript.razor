@@ -1,0 +1,34 @@
+﻿@using StackExchange.Profiling
+@using System.IO
+@using StackExchange.Profiling.Internal
+@inject HttpClient Http
+@inject IJSRuntime jsRuntime
+<div id="mini-profiler" data-ids="" data-authorized="true" data-position="left" data-controls="true" data-version="@MiniProfilerBaseOptions.Version"></div>
+<style type="text/css">@css</style>
+@code{
+    private string js = "";
+    private string css;
+    protected override async Task OnInitializedAsync(){
+
+        using (var stream = typeof(MiniProfiler).Assembly.GetManifestResourceStream("StackExchange.Profiling.ui.includes.min.css"))                    
+        using (var reader = new StreamReader(stream))
+        {
+            css += await reader.ReadToEndAsync();
+        }
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender){
+            return;
+        }
+
+        using (var stream = typeof(MiniProfiler).Assembly.GetManifestResourceStream("StackExchange.Profiling.ui.includes.min.js"))                    
+        using (var reader = new StreamReader(stream))
+        {
+            js += await reader.ReadToEndAsync();
+            await jsRuntime.InvokeVoidAsync("eval", js);
+        }
+    }
+
+}
