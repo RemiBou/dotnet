@@ -1,6 +1,8 @@
 ﻿@using StackExchange.Profiling
 @using System.IO
 @using StackExchange.Profiling.Internal
+@using  Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
 @inject HttpClient Http
 @inject IJSRuntime jsRuntime
 @inject MiniProfilerJsInterop miniProfilerJsInterop;
@@ -34,11 +36,24 @@
         }
        
         await miniProf.StopAsync();
-        MemoryStream ms = new MemoryStream();
-        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(MiniProfiler));
-        serializer.WriteObject(ms, miniProf);
-        Console.WriteLine(Encoding.UTF8.GetString(ms.ToArray()));
-        //await miniProfilerJsInterop.RenderProfiler(miniProf.Clone());
+        await miniProfilerJsInterop.RenderProfiler(miniProf);
+    }
+
+    public class MiniProfilerDefaultContractResolver : DefaultContractResolver
+    {
+        public MiniProfilerDefaultContractResolver()
+        {
+        }
+        
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            IList<JsonProperty> properties = base.CreateProperties(type, memberSerialization);
+        
+            // only serializer properties that start with the specified character
+            properties = properties.Where(p => p.PropertyName != "Options").ToList();
+        
+            return properties;
+        }
     }
 
 }

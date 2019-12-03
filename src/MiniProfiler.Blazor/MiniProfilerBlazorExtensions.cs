@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
+using System.Linq;
 namespace StackExchange.Profiling
 {
     public static class MiniProfilerBlazorExtensions
@@ -23,27 +24,36 @@ namespace StackExchange.Profiling
         }
         public async Task RenderProfiler(MiniProfiler profiler)
         {
-            await jsRuntime.InvokeVoidAsync("MiniProfiler.renderProfiler", profiler);
+            await jsRuntime.InvokeVoidAsync("MiniProfiler.renderProfiler", new
+            {
+                profiler.Id,
+                profiler.Name,
+                profiler.Started,
+                profiler.DurationMilliseconds,
+                profiler.MachineName,
+                profiler.CustomLinks,
+                Root = MapToSerializable(profiler.Root),
+                profiler.ClientTimings,
+                profiler.User,
+                profiler.HasUserViewed
+            });
+        }
+
+
+        public object MapToSerializable(Timing timing)
+        {
+            return new
+            {
+                timing.Id,
+                timing.Name,
+                timing.DurationMilliseconds,
+                timing.StartMilliseconds,
+                Children = timing.Children?.Select(t => MapToSerializable(t))?.ToList(),
+                timing.CustomTimings
+            };
         }
 
     }
 
-    public class MiniProfilerConverter : JsonConverter<MiniProfiler>
-    {
-        public override Category Read(ref Utf8JsonReader reader,
-                                    Type typeToConvert,
-                                    JsonSerializerOptions options)
-        {
-            return JsonSerializer.Deserialize<MiniProfiler>(reader, options);
-        }
-
-        public override void Write(Utf8JsonWriter writer,
-                                   MiniProfiler value,
-                                   JsonSerializerOptions options)
-        {
-            var properties = value.GetType().Get
-        }
-
-    }
 
 }

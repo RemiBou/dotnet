@@ -445,6 +445,7 @@ namespace StackExchange.Profiling {
         }
 
         private processJson = (profiler: IProfiler) => {
+
             const result: IProfiler = { ...profiler };
             const mp = this;
 
@@ -519,7 +520,6 @@ namespace StackExchange.Profiling {
                     timing.CustomTimings = {};
                 }
             }
-
             processTiming(result.Root, null, 0);
             this.processCustomTimings(result);
 
@@ -638,7 +638,6 @@ namespace StackExchange.Profiling {
 
         private renderProfiler = (json: IProfiler) => {
             const p = this.processJson(json);
-            console.log(json);
             const mp = this;
             const encode = this.htmlEscape;
             const duration = (milliseconds: number | undefined, decimalPlaces?: number) => {
