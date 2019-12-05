@@ -637,6 +637,8 @@ namespace StackExchange.Profiling {
             .replace(/'/g, '&#039;')
 
         private renderProfiler = (json: IProfiler) => {
+            json.Started = new Date('' + json.Started); // Ugh, JavaScript
+
             const p = this.processJson(json);
             const mp = this;
             const encode = this.htmlEscape;

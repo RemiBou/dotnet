@@ -1,9 +1,13 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Generic;
+using System;
+using System.Text.Json.Serialization;
+
 namespace StackExchange.Profiling
 {
     public static class MiniProfilerBlazorExtensions
@@ -11,6 +15,9 @@ namespace StackExchange.Profiling
         public static void AddMiniProfiler(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<MiniProfilerJsInterop>();
+            var provider = new BlazorProfilerProvider();
+            MiniProfiler.DefaultOptions.ProfilerProvider = provider;
+            serviceCollection.AddSingleton<BlazorProfilerProvider>(provider);
         }
     }
 
@@ -24,35 +31,161 @@ namespace StackExchange.Profiling
         }
         public async Task RenderProfiler(MiniProfiler profiler)
         {
-            await jsRuntime.InvokeVoidAsync("MiniProfiler.renderProfiler", new
+            await jsRuntime.InvokeVoidAsync("MiniProfiler.buttonShow", new SerializableMiniProfiler
             {
-                profiler.Id,
-                profiler.Name,
-                profiler.Started,
-                profiler.DurationMilliseconds,
-                profiler.MachineName,
-                profiler.CustomLinks,
+                Id = profiler.Id,
+                Name = profiler.Name,
+                Started = profiler.Started,
+                DurationMilliseconds = profiler.DurationMilliseconds,
+                MachineName = profiler.MachineName,
+                CustomLinks = profiler.CustomLinks,
                 Root = MapToSerializable(profiler.Root),
-                profiler.ClientTimings,
-                profiler.User,
-                profiler.HasUserViewed
+                ClientTimings = profiler.ClientTimings != null ? new SerializableCLientTimings
+                {
+                    RedirectCount = profiler.ClientTimings.RedirectCount,
+                    Timings = profiler.ClientTimings.Timings.Select(t => new SerializableClientTiming
+                    {
+                        Name = t.Name,
+                        Start = t.Start,
+                        Duration = t.Duration
+
+                    })
+                    .ToList()
+                } : null,
+                User = profiler.User,
+                HasUserViewed = profiler.HasUserViewed
             });
         }
 
 
-        public object MapToSerializable(Timing timing)
+        private SerializableTiming MapToSerializable(Timing timing)
         {
-            return new
+            return new SerializableTiming
             {
-                timing.Id,
-                timing.Name,
-                timing.DurationMilliseconds,
-                timing.StartMilliseconds,
+                Id = timing.Id,
+                Name = timing.Name,
+                DurationMilliseconds = timing.DurationMilliseconds,
+                StartMilliseconds = timing.StartMilliseconds,
                 Children = timing.Children?.Select(t => MapToSerializable(t))?.ToList(),
-                timing.CustomTimings
+                CustomTimings = timing.CustomTimings?.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp =>
+                        kvp.Value.Select(
+                            c => new SerializableCustomTiming
+                            {
+                                Id = c.Id,
+                                CommandString = c.CommandString,
+                                ExecuteType = c.ExecuteType,
+                                StackTraceSnippet = c.StackTraceSnippet,
+                                StartMilliseconds = c.StartMilliseconds,
+                                DurationMilliseconds = c.DurationMilliseconds,
+                                Errored = c.Errored,
+                                FirstFetchDurationMilliseconds = c.FirstFetchDurationMilliseconds
+                            }
+                    ).ToList()
+                )
             };
         }
 
+        private class SerializableMiniProfiler
+        {
+
+            [JsonPropertyName("Id")] public Guid Id { get; set; }
+            [JsonPropertyName("Name")] public string Name { get; set; }
+            [JsonPropertyName("Started")] public DateTime Started { get; set; }
+            [JsonPropertyName("DurationMilliseconds")] public decimal DurationMilliseconds { get; set; }
+            [JsonPropertyName("MachineName")] public string MachineName { get; set; }
+            [JsonPropertyName("CustomLinks")] public Dictionary<string, string> CustomLinks { get; set; }
+            [JsonPropertyName("Root")] public SerializableTiming Root { get; set; }
+            [JsonPropertyName("ClientTimings")] public SerializableCLientTimings ClientTimings { get; set; }
+            [JsonPropertyName("User")] public string User { get; set; }
+            [JsonPropertyName("HasUserViewed")] public bool HasUserViewed { get; set; }
+        }
+
+        private class SerializableTiming
+        {
+            [JsonPropertyName("Id")] public Guid Id { get; set; }
+            [JsonPropertyName("Name")] public string Name { get; set; }
+            [JsonPropertyName("DurationMilliseconds")] public decimal? DurationMilliseconds { get; set; }
+            [JsonPropertyName("StartMilliseconds")] public decimal StartMilliseconds { get; set; }
+            [JsonPropertyName("Children")] public List<SerializableTiming> Children { get; set; }
+            [JsonPropertyName("CustomTimings")] public Dictionary<string, List<SerializableCustomTiming>> CustomTimings { get; set; }
+        }
+
+        private class SerializableCustomTiming
+        {
+            [JsonPropertyName("Id")] public Guid Id { get; set; }
+            [JsonPropertyName("CommandString")] public string CommandString { get; set; }
+            [JsonPropertyName("ExecuteType")] public string ExecuteType { get; set; }
+            [JsonPropertyName("StackTraceSnippet")] public string StackTraceSnippet { get; set; }
+            [JsonPropertyName("StartMilliseconds")] public decimal StartMilliseconds { get; set; }
+            [JsonPropertyName("DurationMilliseconds")] public decimal? DurationMilliseconds { get; set; }
+            [JsonPropertyName("Errored")] public bool Errored { get; set; }
+            [JsonPropertyName("FirstFetchDurationMilliseconds")] public decimal? FirstFetchDurationMilliseconds { get; set; }
+        }
+
+        private class SerializableCLientTimings
+        {
+            [JsonPropertyName("RedirectCount")] public int RedirectCount { get; set; }
+            [JsonPropertyName("Timings")] public List<SerializableClientTiming> Timings { get; set; }
+        }
+
+        private class SerializableClientTiming
+        {
+            [JsonPropertyName("Name")] public string Name { get; set; }
+            [JsonPropertyName("Start")] public decimal Start { get; set; }
+            [JsonPropertyName("Duration")] public decimal Duration { get; set; }
+        }
+    }
+
+    internal class BlazorProfilerProvider : DefaultProfilerProvider
+    {
+
+        private List<MiniProfiler> _unhandledProfilers = new List<MiniProfiler>();
+        private event EventHandler<MiniProfiler> _OnProfilerStopped;
+        public event EventHandler<MiniProfiler> OnProfilerStopped
+        {
+            add
+            {
+                _OnProfilerStopped += value;
+                foreach (var profiler in _unhandledProfilers)
+                {
+                    _OnProfilerStopped.Invoke(this, profiler);
+                }
+                _unhandledProfilers.Clear();
+            }
+            remove
+            {
+                _OnProfilerStopped -= value;
+            }
+        }
+        public override void Stopped(MiniProfiler profiler, bool discardResults)
+        {
+            base.Stopped(profiler, discardResults);
+            RaiseProfilerStoppedEvent(profiler, discardResults);
+        }
+
+        private void RaiseProfilerStoppedEvent(MiniProfiler profiler, bool discardResults)
+        {
+            if (!discardResults)
+            {
+                if (_OnProfilerStopped != null && _OnProfilerStopped.GetInvocationList() != null)
+                {
+                    _OnProfilerStopped.Invoke(this, profiler);
+                }
+                else
+                {
+                    _unhandledProfilers.Add(profiler);
+                }
+            }
+        }
+
+        public override async Task StoppedAsync(MiniProfiler profiler, bool discardResults)
+        {
+            await base.StoppedAsync(profiler, discardResults);
+            RaiseProfilerStoppedEvent(profiler, discardResults);
+
+        }
     }
 
 

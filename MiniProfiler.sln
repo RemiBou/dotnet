@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{CC40098D-04F2-4F43-B5CF-B74F74351761}"
 	ProjectSection(SolutionItems) = preProject
@@ -78,6 +78,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples.Mvc5.EFCore", "samples\Samples.Mvc5.EFCore\Samples.Mvc5.EFCore.csproj", "{44F5C82B-412E-485D-B349-BA9A008BD5AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniProfiler.Providers.MongoDB", "src\MiniProfiler.Providers.MongoDB\MiniProfiler.Providers.MongoDB.csproj", "{001EFFB2-E56C-4A63-9954-79D7AEB052DB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples.Blazor", "samples\Samples.Blazor\Samples.Blazor.csproj", "{8CB3202A-3FF2-4E78-A57F-133768EEDE73}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniProfiler.Blazor", "src\MiniProfiler.Blazor\MiniProfiler.Blazor.csproj", "{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,6 +181,14 @@ Global
 		{001EFFB2-E56C-4A63-9954-79D7AEB052DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{001EFFB2-E56C-4A63-9954-79D7AEB052DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{001EFFB2-E56C-4A63-9954-79D7AEB052DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CB3202A-3FF2-4E78-A57F-133768EEDE73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CB3202A-3FF2-4E78-A57F-133768EEDE73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CB3202A-3FF2-4E78-A57F-133768EEDE73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CB3202A-3FF2-4E78-A57F-133768EEDE73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -205,10 +217,12 @@ Global
 		{CC4AD661-0F2D-4E27-934D-F321B2214E4B} = {33644D67-D9BB-4989-9B7A-98D51967059B}
 		{44F5C82B-412E-485D-B349-BA9A008BD5AC} = {E0DA4035-4D64-4BB8-8EA1-42197DE62519}
 		{001EFFB2-E56C-4A63-9954-79D7AEB052DB} = {6A510DBF-E85F-4D2C-B8F7-006DA31B3418}
+		{8CB3202A-3FF2-4E78-A57F-133768EEDE73} = {E0DA4035-4D64-4BB8-8EA1-42197DE62519}
+		{5C9DAA7D-BEE1-4255-AA1A-6449BF56AF5C} = {6A510DBF-E85F-4D2C-B8F7-006DA31B3418}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9373F37A-A996-4545-A251-1902C8886E3F}
 		LessCompiler = 6a2b5b70-1c32-482f-b5c6-0597e2d4e376
+		SolutionGuid = {9373F37A-A996-4545-A251-1902C8886E3F}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = StackExchange.Profiling.vsmdi
