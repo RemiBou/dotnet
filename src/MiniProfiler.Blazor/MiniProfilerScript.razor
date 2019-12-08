@@ -8,15 +8,27 @@
 <div id="mini-profiler" data-ids="" data-authorized="true" data-position="right" data-controls="true" data-version="@MiniProfilerBaseOptions.Version"></div>
 <script type="text/javascript" suppress-error="BL9992">@js</script>
 <style type="text/css">@css</style>
+@if(MiniProfiler.Current != null)
+{
+    <button @onclick="Stop">Stop Profiling</button>
+} else {
+    <button @onclick="Start">Start Profiling</button>
+}
 
 @code {
     private string js = "";
     private string css;
-    protected override async Task OnInitializedAsync(){
+    protected async Task Stop(){
         
-        var miniProf = MiniProfiler.DefaultOptions.StartProfiler();
+        await MiniProfiler.Current.StopAsync();
+    }
+    protected async Task Start(){
+        MiniProfiler.DefaultOptions.StartProfiler();
+    }
+    protected override async Task OnInitializedAsync(){
+        MiniProfiler.DefaultOptions.StartProfiler();
         var assembly = typeof(MiniProfiler).Assembly;
-        using(miniProf.Step("Blazor MiniProfiler : CSS Loading"))
+        using(MiniProfiler.Current.Step("Blazor MiniProfiler : CSS Loading"))
         {
             using (var stream = assembly.GetManifestResourceStream("StackExchange.Profiling.ui.includes.min.css"))                    
             using (var reader = new StreamReader(stream))
@@ -24,7 +36,7 @@
                 css += await reader.ReadToEndAsync();
             }
         }
-        using(miniProf.Step("Blazor MiniProfiler : JS Loading"))
+        using(MiniProfiler.Current.Step("Blazor MiniProfiler : JS Loading"))
         {
             using (var stream = assembly.GetManifestResourceStream("StackExchange.Profiling.ui.includes.min.js"))                    
             using (var reader = new StreamReader(stream))
@@ -34,8 +46,6 @@
             }
         }
         
-       
-        await miniProf.StopAsync();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -43,6 +53,7 @@
             return;
         }
         BlazorProfilerProvider.OnProfilerStopped += (target,miniProfiler) => {
+            Console.WriteLine("OnProfilerStopped"+miniProfiler.Id);
             MiniProfilerJsInterop.RenderProfiler(miniProfiler).ContinueWith((t) => {});
         };
         

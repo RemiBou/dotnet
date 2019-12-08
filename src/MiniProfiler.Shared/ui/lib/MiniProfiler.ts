@@ -701,7 +701,6 @@ namespace StackExchange.Profiling {
             </tr>
           </tfoot>
         </table>`;
-
             const customTimings = () => {
                 if (!p.HasCustomTimings) {
                     return '';
@@ -875,6 +874,7 @@ namespace StackExchange.Profiling {
         }
 
         private buttonShow = (json: IProfiler) => {
+
             if (!this.container) {
                 // container not rendered yet
                 this.savedJson.push(json);
@@ -888,7 +888,6 @@ namespace StackExchange.Profiling {
             } else {
                 result.appendTo(this.container);
             }
-
             // limit count to maxTracesToShow, remove those before it
             this.container.find('.mp-result:lt(' + -this.options.maxTracesToShow + ')').remove();
         }

@@ -18,8 +18,18 @@ namespace StackExchange.Profiling
         /// </summary>
         public virtual MiniProfiler CurrentProfiler
         {
-            get => _profiler.Value;
-            protected set => _profiler.Value = value;
+            get
+            {
+                System.Console.WriteLine("CurrentProfiler.get " + _profiler.Value?.Id + "-" + Thread.CurrentThread.ManagedThreadId);
+                return _profiler.Value;
+            }
+            protected set
+            {
+
+                System.Console.WriteLine("CurrentProfiler.set " + value?.Id);
+                _profiler.Value = value;
+
+            }
         }
 
         /// <summary>

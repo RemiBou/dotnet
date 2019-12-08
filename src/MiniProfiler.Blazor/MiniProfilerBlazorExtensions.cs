@@ -7,6 +7,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components;
+using StackExchange.Profiling.Internal;
 
 namespace StackExchange.Profiling
 {
@@ -19,7 +22,10 @@ namespace StackExchange.Profiling
             MiniProfiler.DefaultOptions.ProfilerProvider = provider;
             serviceCollection.AddSingleton<BlazorProfilerProvider>(provider);
         }
+
     }
+
+
 
     public class MiniProfilerJsInterop
     {
@@ -138,10 +144,14 @@ namespace StackExchange.Profiling
         }
     }
 
-    internal class BlazorProfilerProvider : DefaultProfilerProvider
+
+    internal class BlazorProfilerProvider : IAsyncProfilerProvider
     {
 
         private List<MiniProfiler> _unhandledProfilers = new List<MiniProfiler>();
+
+        public MiniProfiler CurrentProfiler { get; private set; }
+
         private event EventHandler<MiniProfiler> _OnProfilerStopped;
         public event EventHandler<MiniProfiler> OnProfilerStopped
         {
@@ -159,9 +169,13 @@ namespace StackExchange.Profiling
                 _OnProfilerStopped -= value;
             }
         }
-        public override void Stopped(MiniProfiler profiler, bool discardResults)
+        public void Stopped(MiniProfiler profiler, bool discardResults)
         {
-            base.Stopped(profiler, discardResults);
+            Console.WriteLine("Stopped");
+            if (discardResults)
+            {
+                CurrentProfiler = null;
+            }
             RaiseProfilerStoppedEvent(profiler, discardResults);
         }
 
@@ -180,11 +194,21 @@ namespace StackExchange.Profiling
             }
         }
 
-        public override async Task StoppedAsync(MiniProfiler profiler, bool discardResults)
+        public async Task StoppedAsync(MiniProfiler profiler, bool discardResults)
         {
-            await base.StoppedAsync(profiler, discardResults);
+            Console.WriteLine("StoppedAsync");
+            if (discardResults)
+            {
+                CurrentProfiler = null;
+            }
             RaiseProfilerStoppedEvent(profiler, discardResults);
 
+        }
+
+        public MiniProfiler Start(string profilerName, MiniProfilerBaseOptions options)
+        {
+            CurrentProfiler = new MiniProfiler(profilerName ?? "MiniProfiler", options);
+            return CurrentProfiler;
         }
     }
 
