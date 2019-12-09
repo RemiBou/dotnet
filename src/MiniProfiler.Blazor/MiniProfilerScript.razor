@@ -7,13 +7,21 @@
 @inject MiniProfilerJsInterop MiniProfilerJsInterop;
 <div id="mini-profiler" data-ids="" data-authorized="true" data-position="right" data-controls="true" data-version="@MiniProfilerBaseOptions.Version"></div>
 <script type="text/javascript" suppress-error="BL9992">@js</script>
-<style type="text/css">@css</style>
-@if(MiniProfiler.Current != null)
-{
-    <button @onclick="Stop">Stop Profiling</button>
-} else {
-    <button @onclick="Start">Start Profiling</button>
-}
+<style type="text/css">@css 
+.mp-blazor{
+    right:150px;
+    border: solid .5px #ababab;
+    border-top-width: 0px;
+}</style>
+<div class="mp-blazor mp-results">
+    <div class="mp-button">
+    @if(MiniProfiler.Current != null)
+    {
+        <span @onclick="Stop">Stop</span>
+    } else {
+        <span @onclick="Start">Start</span>
+    }</div>
+</div>
 
 @code {
     private string js = "";
@@ -55,6 +63,7 @@
         BlazorProfilerProvider.OnProfilerStopped += (target,miniProfiler) => {
             Console.WriteLine("OnProfilerStopped"+miniProfiler.Id);
             MiniProfilerJsInterop.RenderProfiler(miniProfiler).ContinueWith((t) => {});
+            this.StateHasChanged();
         };
         
     }

@@ -172,11 +172,10 @@ namespace StackExchange.Profiling
         public void Stopped(MiniProfiler profiler, bool discardResults)
         {
             Console.WriteLine("Stopped");
-            if (discardResults)
-            {
+            if (profiler == CurrentProfiler)
                 CurrentProfiler = null;
-            }
-            RaiseProfilerStoppedEvent(profiler, discardResults);
+            if (!discardResults)
+                RaiseProfilerStoppedEvent(profiler, discardResults);
         }
 
         private void RaiseProfilerStoppedEvent(MiniProfiler profiler, bool discardResults)
@@ -197,12 +196,14 @@ namespace StackExchange.Profiling
         public async Task StoppedAsync(MiniProfiler profiler, bool discardResults)
         {
             Console.WriteLine("StoppedAsync");
-            if (discardResults)
-            {
-                CurrentProfiler = null;
-            }
-            RaiseProfilerStoppedEvent(profiler, discardResults);
 
+            if (profiler == CurrentProfiler)
+                CurrentProfiler = null;
+
+            if (!discardResults)
+            {
+                RaiseProfilerStoppedEvent(profiler, discardResults);
+            }
         }
 
         public MiniProfiler Start(string profilerName, MiniProfilerBaseOptions options)

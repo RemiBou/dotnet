@@ -39,7 +39,9 @@ else
     
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        using(MiniProfiler.Current.Step("Download weather")){
+            forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        }
     }
 
     class WeatherForecast
