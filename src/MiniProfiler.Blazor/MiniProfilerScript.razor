@@ -10,16 +10,18 @@
 <style type="text/css">@css 
 .mp-blazor{
     right:150px;
-    border: solid .5px #ababab;
+}
+.mp-blazor .mp-button{
+    border: solid 0.5px #ababab;
     border-top-width: 0px;
 }</style>
-<div class="mp-blazor mp-results">
+<div class="mp-blazor mp-results mp-result">
     <div class="mp-button">
     @if(MiniProfiler.Current != null)
     {
-        <span @onclick="Stop">Stop</span>
+        <span @onclick="Stop">stop</span>
     } else {
-        <span @onclick="Start">Start</span>
+        <span @onclick="Start">start</span>
     }</div>
 </div>
 
