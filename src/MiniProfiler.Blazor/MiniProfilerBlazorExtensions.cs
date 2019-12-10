@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.JSInterop;
@@ -10,6 +11,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components;
 using StackExchange.Profiling.Internal;
+using System.Threading;
 
 namespace StackExchange.Profiling
 {
@@ -21,10 +23,41 @@ namespace StackExchange.Profiling
             var provider = new BlazorProfilerProvider();
             MiniProfiler.DefaultOptions.ProfilerProvider = provider;
             serviceCollection.AddSingleton<BlazorProfilerProvider>(provider);
+
+            serviceCollection.Replace(new ServiceDescriptor(
+                typeof(HttpClient), (s =>
+                {
+                    var navigationManager = s.GetRequiredService<NavigationManager>();
+                    return new MiniProfilerBlazorHttpClient
+                    {
+                        BaseAddress = new Uri(navigationManager.BaseUri)
+                    };
+                }), ServiceLifetime.Singleton));
         }
 
     }
+    public class MiniProfilerBlazorHttpClient : HttpClient
+    {
+        public MiniProfilerBlazorHttpClient()
+        {
+        }
 
+        public MiniProfilerBlazorHttpClient(HttpMessageHandler handler) : base(handler)
+        {
+        }
+
+        public MiniProfilerBlazorHttpClient(HttpMessageHandler handler, bool disposeHandler) : base(handler, disposeHandler)
+        {
+        }
+
+        public override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            using (var timing = MiniProfiler.Current.CustomTiming("http-browser", request.RequestUri.ToString(), request.Method.ToString(), true))
+            {
+                return await base.SendAsync(request, cancellationToken);
+            }
+        }
+    }
 
 
     public class MiniProfilerJsInterop
