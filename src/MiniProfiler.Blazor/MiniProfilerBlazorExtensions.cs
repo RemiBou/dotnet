@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components;
 using StackExchange.Profiling.Internal;
 using System.Threading;
+using System.Diagnostics;
 
 namespace StackExchange.Profiling
 {
@@ -23,38 +24,26 @@ namespace StackExchange.Profiling
             var provider = new BlazorProfilerProvider();
             MiniProfiler.DefaultOptions.ProfilerProvider = provider;
             serviceCollection.AddSingleton<BlazorProfilerProvider>(provider);
+            var subscription = DiagnosticListener.AllListeners.Subscribe(
+                new BlazorObserver());
 
-            serviceCollection.Replace(new ServiceDescriptor(
-                typeof(HttpClient), (s =>
-                {
-                    var navigationManager = s.GetRequiredService<NavigationManager>();
-                    return new MiniProfilerBlazorHttpClient
-                    {
-                        BaseAddress = new Uri(navigationManager.BaseUri)
-                    };
-                }), ServiceLifetime.Singleton));
         }
 
-    }
-    public class MiniProfilerBlazorHttpClient : HttpClient
-    {
-        public MiniProfilerBlazorHttpClient()
+        private class BlazorObserver : IObserver<DiagnosticListener>
         {
-        }
-
-        public MiniProfilerBlazorHttpClient(HttpMessageHandler handler) : base(handler)
-        {
-        }
-
-        public MiniProfilerBlazorHttpClient(HttpMessageHandler handler, bool disposeHandler) : base(handler, disposeHandler)
-        {
-        }
-
-        public override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            using (var timing = MiniProfiler.Current.CustomTiming("http-browser", request.RequestUri.ToString(), request.Method.ToString(), true))
+            public void OnCompleted()
             {
-                return await base.SendAsync(request, cancellationToken);
+                Console.WriteLine("OnCOmplete");
+            }
+
+            public void OnError(Exception error)
+            {
+                Console.WriteLine(error.Message);
+            }
+
+            public void OnNext(DiagnosticListener value)
+            {
+                Console.WriteLine(value.Name);
             }
         }
     }
