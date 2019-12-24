@@ -31,7 +31,6 @@ namespace StackExchange.Profiling
         }
         public void Stopped(MiniProfiler profiler, bool discardResults)
         {
-            Console.WriteLine("Stopped");
             if (profiler == CurrentProfiler)
                 CurrentProfiler = null;
             if (!discardResults)
@@ -55,7 +54,6 @@ namespace StackExchange.Profiling
 
         public async Task StoppedAsync(MiniProfiler profiler, bool discardResults)
         {
-            Console.WriteLine("StoppedAsync");
 
             if (profiler == CurrentProfiler)
                 CurrentProfiler = null;

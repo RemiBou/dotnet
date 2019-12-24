@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using System.Text.Json.Serialization;
+using StackExchange.Profiling.Internal;
 
 namespace StackExchange.Profiling
 {
@@ -41,6 +42,12 @@ namespace StackExchange.Profiling
                 User = profiler.User,
                 HasUserViewed = profiler.HasUserViewed
             });
+        }
+
+        public async Task AdddClientTiming()
+        {
+            var resultRequest = await jsRuntime.InvokeAsync<ResultRequest>("MiniProfiler.Blazor.getClientTimings");
+            MiniProfiler.Current.ClientTimings = ClientTimings.FromRequest(resultRequest);
         }
 
 

@@ -7,6 +7,15 @@
 @inject MiniProfilerJsInterop MiniProfilerJsInterop;
 <div id="mini-profiler" data-ids="" data-authorized="true" data-position="right" data-controls="true" data-version="@MiniProfilerBaseOptions.Version"></div>
 <script type="text/javascript" suppress-error="BL9992">@js</script>
+<script type="text/javascript" suppress-error="BL9992">
+window.MiniProfiler.Blazor = {
+    getClientTimings: function(){
+        const request = {};        
+        window.MiniProfiler.addClientTiming(request);
+        return request;
+    }
+};
+</script>
 <style type="text/css">@css 
 .mp-blazor{
     right:150px;
@@ -52,7 +61,6 @@
             using (var reader = new StreamReader(stream))
             {
                 js += await reader.ReadToEndAsync();
-                //await jsRuntime.InvokeVoidAsync("eval", js);
             }
         }
         
@@ -62,8 +70,8 @@
         if(!firstRender){
             return;
         }
-        BlazorProfilerProvider.OnProfilerStopped += (target,miniProfiler) => {
-            Console.WriteLine("OnProfilerStopped"+miniProfiler.Id);
+        await MiniProfilerJsInterop.AdddClientTiming();
+        BlazorProfilerProvider.OnProfilerStopped += (target,miniProfiler) => {        
             MiniProfilerJsInterop.RenderProfiler(miniProfiler).ContinueWith((t) => {});
             this.StateHasChanged();
         };

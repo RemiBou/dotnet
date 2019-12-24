@@ -124,80 +124,8 @@ namespace StackExchange.Profiling {
         public Performance?: ClientTiming[];
         public Probes?: ClientTiming[];
         public RedirectCount?: number;
-        constructor(id: string, perfTimings: ITimingInfo[]) {
+        constructor(id: string) {
             this.Id = id;
-            if (perfTimings && window.performance && window.performance.timing) {
-                const resource = window.performance.timing;
-                const start = resource.fetchStart;
-
-                this.Performance = perfTimings
-                    .filter((current) => resource[current.name])
-                    .map((current, i) => ({ item: current, index: i }))
-                    .sort((a, b) => resource[a.item.name] - resource[b.item.name] || a.index - b.index)
-                    .map((x, i, sorted) => {
-                        const current = x.item;
-                        const next = i + 1 < sorted.length ? sorted[i + 1].item : null;
-
-                        return {
-                            ...current,
-                            ...{
-                                startTime: resource[current.name] - start,
-                                timeTaken: !next ? 0 : (resource[next.name] - resource[current.name]),
-                            },
-                        };
-                    })
-                    .map((item, i) => ({
-                        Name: item.name,
-                        Start: item.startTime,
-                        Duration: item.point ? undefined : item.timeTaken,
-                    }));
-
-                if (window.performance.navigation) {
-                    this.RedirectCount = window.performance.navigation.redirectCount;
-                }
-
-                if (window.mPt) {
-                    const pResults = window.mPt.results();
-                    this.Probes = Object.keys(pResults).map((k) => pResults[k].start && pResults[k].end
-                        ? {
-                            Name: k,
-                            Start: pResults[k].start - start,
-                            Duration: pResults[k].end - pResults[k].start,
-                        } : null).filter((v) => v);
-                    window.mPt.flush();
-                }
-
-                if (window.performance.getEntriesByType && window.PerformancePaintTiming) {
-                    const entries = window.performance.getEntriesByType('paint');
-                    let firstPaint;
-                    let firstContentPaint;
-
-                    for (const entry of entries) {
-                        switch (entry.name) {
-                            case 'first-paint':
-                                firstPaint = new ClientTiming('firstPaintTime', Math.round(entry.startTime));
-                                this.Performance.push(firstPaint);
-                                break;
-                            case 'first-contentful-paint':
-                                firstContentPaint = new ClientTiming('firstContentfulPaintTime', Math.round(entry.startTime));
-                                break;
-                        }
-                    }
-                    if (firstPaint && firstContentPaint && firstContentPaint.Start > firstPaint.Start) {
-                        this.Performance.push(firstContentPaint);
-                    }
-
-                } else if (window.chrome && window.chrome.loadTimes) {
-                    // fallback to Chrome timings
-                    const chromeTimes = window.chrome.loadTimes();
-                    if (chromeTimes.firstPaintTime) {
-                        this.Performance.push(new ClientTiming('firstPaintTime', Math.round(chromeTimes.firstPaintTime * 1000 - start)));
-                    }
-                    if (chromeTimes.firstPaintAfterLoadTime && chromeTimes.firstPaintAfterLoadTime > chromeTimes.firstPaintTime) {
-                        this.Performance.push(new ClientTiming('firstPaintAfterLoadTime', Math.round(chromeTimes.firstPaintAfterLoadTime * 1000 - start)));
-                    }
-                }
-            }
         }
     }
 
@@ -404,11 +332,88 @@ namespace StackExchange.Profiling {
             }
             updateGrid();
         }
+        private addClientTiming(resultRequest: ResultRequest) {
 
+            if (this.clientPerfTimings && window.performance && window.performance.timing) {
+                const resource = window.performance.timing;
+                const start = resource.fetchStart;
+
+                resultRequest.Performance = this.clientPerfTimings
+                    .filter((current) => resource[current.name])
+                    .map((current, i) => ({ item: current, index: i }))
+                    .sort((a, b) => resource[a.item.name] - resource[b.item.name] || a.index - b.index)
+                    .map((x, i, sorted) => {
+                        const current = x.item;
+                        const next = i + 1 < sorted.length ? sorted[i + 1].item : null;
+
+                        return {
+                            ...current,
+                            ...{
+                                startTime: resource[current.name] - start,
+                                timeTaken: !next ? 0 : (resource[next.name] - resource[current.name]),
+                            },
+                        };
+                    })
+                    .map((item, i) => ({
+                        Name: item.name,
+                        Start: item.startTime,
+                        Duration: item.point ? undefined : item.timeTaken,
+                    }));
+
+                if (window.performance.navigation) {
+                    resultRequest.RedirectCount = window.performance.navigation.redirectCount;
+                }
+
+                if (window.mPt) {
+                    const pResults = window.mPt.results();
+                    resultRequest.Probes = Object.keys(pResults).map((k) => pResults[k].start && pResults[k].end
+                        ? {
+                            Name: k,
+                            Start: pResults[k].start - start,
+                            Duration: pResults[k].end - pResults[k].start,
+                        } : null).filter((v) => v);
+                    window.mPt.flush();
+                }
+
+                if (window.performance.getEntriesByType && window.PerformancePaintTiming) {
+                    const entries = window.performance.getEntriesByType('paint');
+                    let firstPaint;
+                    let firstContentPaint;
+
+                    for (const entry of entries) {
+                        switch (entry.name) {
+                            case 'first-paint':
+                                firstPaint = new ClientTiming('firstPaintTime', Math.round(entry.startTime));
+                                resultRequest.Performance.push(firstPaint);
+                                break;
+                            case 'first-contentful-paint':
+                                firstContentPaint = new ClientTiming('firstContentfulPaintTime', Math.round(entry.startTime));
+                                break;
+                        }
+                    }
+                    if (firstPaint && firstContentPaint && firstContentPaint.Start > firstPaint.Start) {
+                        resultRequest.Performance.push(firstContentPaint);
+                    }
+
+                } else if (window.chrome && window.chrome.loadTimes) {
+                    // fallback to Chrome timings
+                    const chromeTimes = window.chrome.loadTimes();
+                    if (chromeTimes.firstPaintTime) {
+                        resultRequest.Performance.push(new ClientTiming('firstPaintTime', Math.round(chromeTimes.firstPaintTime * 1000 - start)));
+                    }
+                    if (chromeTimes.firstPaintAfterLoadTime && chromeTimes.firstPaintAfterLoadTime > chromeTimes.firstPaintTime) {
+                        resultRequest.Performance.push(new ClientTiming('firstPaintAfterLoadTime', Math.round(chromeTimes.firstPaintAfterLoadTime * 1000 - start)));
+                    }
+                }
+            }
+        }
         private fetchResults = (ids: string[]) => {
             for (let i = 0; ids && i < ids.length; i++) {
                 const id = ids[i];
-                const request = new ResultRequest(id, id === this.options.currentId ? this.clientPerfTimings : null);
+                const request = new ResultRequest(id);
+                if (id === this.options.currentId) {
+                    this.addClientTiming(request);
+                }
                 const mp = this;
 
                 if (mp.fetchStatus.hasOwnProperty(id)) {

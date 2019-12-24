@@ -12,7 +12,6 @@ namespace StackExchange.Profiling
             var provider = new BlazorProfilerProvider();
             MiniProfiler.DefaultOptions.ProfilerProvider = provider;
             serviceCollection.AddSingleton(provider);
-            serviceCollection.AddSingleton(s => new MiniProfilerBlazorHttpClient(s.GetRequiredService<HttpClient>()));
 
         }
     }
