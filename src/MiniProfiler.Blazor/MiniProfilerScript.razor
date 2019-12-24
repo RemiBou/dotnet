@@ -1,42 +1,53 @@
 ﻿@using StackExchange.Profiling
 @using System.IO
 @using StackExchange.Profiling.Internal
+@using StackExchange.Profiling
+@using System.Text.Json;
 @inject HttpClient Http
 @inject IJSRuntime jsRuntime
 @inject BlazorProfilerProvider BlazorProfilerProvider;
 @inject MiniProfilerJsInterop MiniProfilerJsInterop;
-<div id="mini-profiler" data-ids="" data-authorized="true" data-position="right" data-controls="true" data-version="@MiniProfilerBaseOptions.Version"></div>
-<script type="text/javascript" suppress-error="BL9992">@js</script>
-<script type="text/javascript" suppress-error="BL9992">
-window.MiniProfiler.Blazor = {
-    getClientTimings: function(){
-        const request = {};        
-        window.MiniProfiler.addClientTiming(request);
-        return request;
+@if(initialized)
+{
+    <div id="mini-profiler" data-ids="@Ids"  data-authorized="true" data-position="right" data-controls="true" data-version="@MiniProfilerBlazorOptions.Version" data-path="@ServerSidePath"></div>
+    <script type="text/javascript" suppress-error="BL9992">@js</script>
+    <script type="text/javascript" suppress-error="BL9992">
+    window.MiniProfiler.Blazor = {
+        getClientTimings: function(){
+            const request = {};        
+            window.MiniProfiler.addClientTiming(request);
+            return request;
+        }
+    };
+    </script>
+    <style type="text/css">@css 
+    .mp-blazor{
+        right:150px;
     }
-};
-</script>
-<style type="text/css">@css 
-.mp-blazor{
-    right:150px;
+    .mp-blazor .mp-button{
+        border: solid 0.5px #ababab;
+        border-top-width: 0px;
+    }</style>
+    <div class="mp-blazor mp-results mp-result">
+        <div class="mp-button">
+        @if(MiniProfiler.Current != null)
+        {
+            <span @onclick="Stop">stop</span>
+        } else {
+            <span @onclick="Start">start</span>
+        }</div>
+    </div>
 }
-.mp-blazor .mp-button{
-    border: solid 0.5px #ababab;
-    border-top-width: 0px;
-}</style>
-<div class="mp-blazor mp-results mp-result">
-    <div class="mp-button">
-    @if(MiniProfiler.Current != null)
-    {
-        <span @onclick="Stop">stop</span>
-    } else {
-        <span @onclick="Start">start</span>
-    }</div>
-</div>
-
 @code {
+    [Parameter]
+    public string ServerSidePath {get;set;}
+    private string Ids = "";
     private string js = "";
     private string css;
+
+    private bool initialized = false; // this is used for forcing rendering once all the async operations are done
+
+    private bool postScriptInitializationDone = false;
     protected async Task Stop(){
         
         await MiniProfiler.Current.StopAsync();
@@ -45,6 +56,7 @@ window.MiniProfiler.Blazor = {
         MiniProfiler.DefaultOptions.StartProfiler();
     }
     protected override async Task OnInitializedAsync(){
+        ServerSidePath = ServerSidePath ?? "/mini-profiler-resources/";
         MiniProfiler.DefaultOptions.StartProfiler();
         var assembly = typeof(MiniProfiler).Assembly;
         using(MiniProfiler.Current.Step("Blazor MiniProfiler : CSS Loading"))
@@ -63,11 +75,25 @@ window.MiniProfiler.Blazor = {
                 js += await reader.ReadToEndAsync();
             }
         }
+
+        using(MiniProfiler.Current.Step("Blazor MiniProfiler : Get server side profiling"))
+        {
+            Ids = string.Join(
+                ",",
+                JsonSerializer.Deserialize<MiniProfiler[]>(
+                    await Http.GetStringAsync(ServerSidePath+"results-list")
+                )
+                .Where(p => !p.HasUserViewed && !p.Name.Contains("_framework"))
+                .Select(p =>  p.Id)
+            );
+           
+        }
+        initialized = true;
         
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(!firstRender){
+        if(!initialized || postScriptInitializationDone){
             return;
         }
         await MiniProfilerJsInterop.AdddClientTiming();
@@ -75,6 +101,7 @@ window.MiniProfiler.Blazor = {
             MiniProfilerJsInterop.RenderProfiler(miniProfiler).ContinueWith((t) => {});
             this.StateHasChanged();
         };
+        postScriptInitializationDone = true;
         
     }
 

@@ -211,7 +211,7 @@ namespace StackExchange.Profiling {
                 startHidden: data.startHidden,
                 ignoredDuplicateExecuteTypes: (data.ignoredDuplicateExecuteTypes || '').split(','),
             };
-
+            console.log(data);
             function doInit() {
                 const initPopupView = () => {
                     if (mp.options.authorized) {
