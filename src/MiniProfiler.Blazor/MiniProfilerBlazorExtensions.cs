@@ -16,5 +16,4 @@ namespace StackExchange.Profiling
         }
     }
 
-
 }
